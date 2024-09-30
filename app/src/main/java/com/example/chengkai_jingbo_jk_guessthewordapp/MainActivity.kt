@@ -370,7 +370,7 @@ fun HandleHintClick(
             1 -> {
                 // 第三次点击显示所有元音字母，并减少一次机会
                 onVowelsShownUpdate(true)
-                //TODO: Show all vowels logic implementation
+                //TODO: Show all vowels logic implementation，然后直接吊死
                 onRemainingTurnsUpdate(remainingTurns - 1)
             }
         }
