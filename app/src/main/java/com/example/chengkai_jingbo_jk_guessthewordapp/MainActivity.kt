@@ -39,7 +39,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun GuessTheWordGame() {
-    var currentWord by rememberSaveable { mutableStateOf("APPLE") }
+    val currentWord by rememberSaveable { mutableStateOf("APPLE") }
+    val currentHint by rememberSaveable { mutableStateOf("FRUIT") }
+
     var guessedLetters by rememberSaveable { mutableStateOf(listOf<Char>()) }
     var remainingTurns by rememberSaveable { mutableIntStateOf(6) }
     var remainingHits by rememberSaveable { mutableIntStateOf(3) }
@@ -61,6 +63,7 @@ fun GuessTheWordGame() {
                 // Landscape mode layout
                 LandscapeLayout(
                     currentWord = currentWord,
+                    currentHint = currentHint,
                     guessedLetters = guessedLetters,
                     remainingTurns = remainingTurns,
                     showHint = showHint,
@@ -90,8 +93,9 @@ fun GuessTheWordGame() {
                         )
                     },
                     onHintClick = {
-                        HandleHintClick(
+                        handleHintClick(
                             currentWord = currentWord,
+                            currentHint = currentHint,
                             guessedLetters = guessedLetters,
                             remainingTurns = remainingTurns,
                             remainingHits = remainingHits,
@@ -123,7 +127,6 @@ fun GuessTheWordGame() {
                     currentWord = currentWord,
                     guessedLetters = guessedLetters,
                     remainingTurns = remainingTurns,
-                    showHint = showHint,
                     disabledLetters = disabledLetters,
                     vowelsShown = vowelsShown,
                     onLetterSelected = { letter ->
@@ -144,24 +147,8 @@ fun GuessTheWordGame() {
                                 showHint = false
                                 vowelsShown = true
                                 disabledLetters = listOf()
+                                hintMessage = "" // Reset hint message
                             }
-                        )
-                    },
-                    onHintClick = {
-                        HandleHintClick(
-                            currentWord = currentWord,
-                            guessedLetters = guessedLetters,
-                            remainingTurns = remainingTurns,
-                            remainingHits = remainingHits,
-                            vowelsShown = vowelsShown,
-                            snackbarHostState = snackbarHostState,
-                            scope = scope,
-                            onRemainingHitsUpdate = { remainingHits = it },
-                            onRemainingTurnsUpdate = { remainingTurns = it },
-                            onDisabledLettersUpdate = { disabledLetters = disabledLetters + it },
-                            onShowHintUpdate = { showHint = it },
-                            onGuessedLettersUpdate = { guessedLetters = it },
-                            onHintMessageUpdate = { hintMessage = it }  // Update hint message
                         )
                     },
                     onNewGame = {
@@ -184,11 +171,9 @@ fun PortraitLayout(
     currentWord: String,
     guessedLetters: List<Char>,
     remainingTurns: Int,
-    showHint: Boolean,
     disabledLetters: List<Char>,
     vowelsShown: Boolean,
     onLetterSelected: (Char) -> Unit,
-    onHintClick: () -> Unit,
     onNewGame: () -> Unit,
     columns: Int  // Dynamically set number of columns based on orientation
 ) {
@@ -231,6 +216,7 @@ fun PortraitLayout(
 @Composable
 fun LandscapeLayout(
     currentWord: String,
+    currentHint: String,
     guessedLetters: List<Char>,
     remainingTurns: Int,
     showHint: Boolean,
@@ -422,8 +408,9 @@ fun HangmanCanvas(remainingTurns: Int) {
 }
 
 @SuppressLint("CoroutineCreationDuringComposition")
-fun HandleHintClick(
+fun handleHintClick(
     currentWord: String,
+    currentHint: String,
     guessedLetters: List<Char>,
     remainingTurns: Int,
     remainingHits: Int,
@@ -444,7 +431,7 @@ fun HandleHintClick(
     } else {
         when (remainingHits) {
             3 -> {
-                onHintMessageUpdate("Hint 1: food")  // Update hint message instead of using Snackbar
+                onHintMessageUpdate("Hint 1: $currentHint")  // Update hint message instead of using Snackbar
                 onShowHintUpdate(true)
             }
             2 -> {
