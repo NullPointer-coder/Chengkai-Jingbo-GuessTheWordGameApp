@@ -246,12 +246,20 @@ fun LandscapeLayout(
         modifier = Modifier.fillMaxSize(),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        // LetterSelectionPanel takes more space with weight(2f)
         Column(
-            modifier = Modifier.fillMaxHeight().weight(2f).padding(4.dp),
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(3f)
+                .padding(4.dp),
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = "CHOOSE A LETTER", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text(text = "CHOOSE A LETTER",
+                modifier = Modifier
+                    .padding(horizontal = 16.dp),
+                style = MaterialTheme
+                    .typography
+                    .headlineSmall,
+                fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(6.dp))
 
             LetterSelectionPanel(
@@ -261,8 +269,11 @@ fun LandscapeLayout(
                 onLetterSelected = onLetterSelected,
                 columns = columns
             )
+            Spacer(modifier = Modifier.height(4.dp))
+
             Row(
-                modifier = Modifier.fillMaxHeight().padding(4.dp)
+                modifier = Modifier
+                    .padding(4.dp)
             ) {
                 Button(onClick = { onHintClick() }) {
                     Text("Hint")
@@ -273,21 +284,21 @@ fun LandscapeLayout(
                 Button(onClick = { onNewGame() }) {
                     Text("New Game")
                 }
-                Row { // Show hint message below the Hint button
-                    if (hintMessage.isNotEmpty()) {
-                        Text(text = hintMessage, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(2.dp))
-                    } }
             }
 
-
-
+            Text(text = hintMessage.ifEmpty { " " },
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+            )
         }
-
-        Spacer(modifier = Modifier.width(4.dp))
 
         // HangmanCanvas takes less space with weight(1f)
         Column(
-            modifier = Modifier.fillMaxHeight().weight(1f),
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(1f),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -469,12 +480,12 @@ fun checkGameOver(
 ) {
     if (remainingTurns <= 0) {
         scope.launch {
-            snackbarHostState.showSnackbar("You lost! The word was $currentWord")
+            snackbarHostState.showSnackbar("❌ You lost! The word was \"$currentWord\"!")
         }
         onNewGame()
     } else if (currentWord.all { guessedLetters.contains(it) }) {
         scope.launch {
-            snackbarHostState.showSnackbar("Congratulations! You guessed the word!")
+            snackbarHostState.showSnackbar("✅ Congratulations! You guessed the word!")
         }
         onNewGame()
     }
