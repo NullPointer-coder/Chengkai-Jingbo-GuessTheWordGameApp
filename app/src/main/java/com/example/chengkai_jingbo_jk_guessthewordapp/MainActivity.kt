@@ -124,7 +124,7 @@ fun GuessTheWordGame() {
                         if (!currentWord.contains(letter)) {
                             remainingTurns -= 1
                         }
-                        
+
                         checkGameOver(
                             currentWord = currentWord,
                             guessedLetters = guessedLetters,
