@@ -21,10 +21,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.CoroutineScope
-
 import com.example.chengkai_jingbo_jk_guessthewordapp.ui.theme.ChengkaiJingboJKGuessTheWordAppTheme
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,10 +41,12 @@ class MainActivity : ComponentActivity() {
 fun GuessTheWordGame() {
     var currentWord by rememberSaveable { mutableStateOf("APPLE") }
     var guessedLetters by rememberSaveable { mutableStateOf(listOf<Char>()) }
-    var remainingTurns by rememberSaveable { mutableStateOf(6) }
-    var remainingHits by rememberSaveable { mutableStateOf(3) }
+    var remainingTurns by rememberSaveable { mutableIntStateOf(6) }
+    var remainingHits by rememberSaveable { mutableIntStateOf(3) }
     var showHint by rememberSaveable { mutableStateOf(false) }
-    var vowelsShown by rememberSaveable { mutableStateOf(false) }
+    var vowelsShown by rememberSaveable { mutableStateOf(true) }
+    var disabledLetters by rememberSaveable { mutableStateOf(listOf<Char>()) }
+    var hintMessage by rememberSaveable { mutableStateOf("") }  // Store the hint message
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -54,52 +55,39 @@ fun GuessTheWordGame() {
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
         BoxWithConstraints(modifier = Modifier.padding(paddingValues)) {
-            if (maxWidth < maxHeight) {
-                PortraitLayout(
-                    currentWord = currentWord,
-                    guessedLetters = guessedLetters,
-                    remainingTurns = remainingTurns,
-                    showHint = showHint,
-                    onLetterSelected = { letter ->
-                        guessedLetters = guessedLetters + letter
-                        if (!currentWord.contains(letter)) {
-                            remainingTurns -= 1
-                        }
-                    },
-                    onHintClick = {
-                        HandleHintClick(
-                            currentWord = currentWord,
-                            guessedLetters = guessedLetters,
-                            remainingTurns = remainingTurns,
-                            remainingHits = remainingHits,
-                            vowelsShown = vowelsShown,
-                            snackbarHostState = snackbarHostState,
-                            scope = scope,
-                            onRemainingHitsUpdate = { remainingHits = it },
-                            onRemainingTurnsUpdate = { remainingTurns = it },
-                            onShowHintUpdate = { showHint = it },
-                            onVowelsShownUpdate = { vowelsShown = it }
-                        )
-                    },
-                    onNewGame = {
-                        guessedLetters = listOf()
-                        remainingTurns = 6
-                        remainingHits = 3
-                        showHint = false
-                        vowelsShown = false
-                    }
-                )
-            } else {
+            val columns = if (maxWidth > maxHeight) 7 else 4 // Use 7 columns in landscape, 4 in portrait
+
+            if (maxWidth > maxHeight) {
+                // Landscape mode layout
                 LandscapeLayout(
                     currentWord = currentWord,
                     guessedLetters = guessedLetters,
                     remainingTurns = remainingTurns,
                     showHint = showHint,
+                    disabledLetters = disabledLetters,
+                    vowelsShown = vowelsShown,
+                    hintMessage = hintMessage,  // Pass hint message
                     onLetterSelected = { letter ->
                         guessedLetters = guessedLetters + letter
                         if (!currentWord.contains(letter)) {
                             remainingTurns -= 1
                         }
+                        checkGameOver(
+                            currentWord = currentWord,
+                            guessedLetters = guessedLetters,
+                            remainingTurns = remainingTurns,
+                            snackbarHostState = snackbarHostState,
+                            scope = scope,
+                            onNewGame = {
+                                guessedLetters = listOf()
+                                remainingTurns = 6
+                                remainingHits = 3
+                                showHint = false
+                                vowelsShown = true
+                                disabledLetters = listOf()
+                                hintMessage = ""  // Reset hint message
+                            }
+                        )
                     },
                     onHintClick = {
                         HandleHintClick(
@@ -112,8 +100,10 @@ fun GuessTheWordGame() {
                             scope = scope,
                             onRemainingHitsUpdate = { remainingHits = it },
                             onRemainingTurnsUpdate = { remainingTurns = it },
+                            onDisabledLettersUpdate = { disabledLetters = disabledLetters + it },
                             onShowHintUpdate = { showHint = it },
-                            onVowelsShownUpdate = { vowelsShown = it }
+                            onGuessedLettersUpdate = { guessedLetters = it },
+                            onHintMessageUpdate = { hintMessage = it }  // Update hint message
                         )
                     },
                     onNewGame = {
@@ -121,14 +111,73 @@ fun GuessTheWordGame() {
                         remainingTurns = 6
                         remainingHits = 3
                         showHint = false
-                        vowelsShown = false
-                    }
+                        vowelsShown = true
+                        disabledLetters = listOf()
+                        hintMessage = ""  // Reset hint message
+                    },
+                    columns = columns
+                )
+            } else {
+                // Portrait mode layout
+                PortraitLayout(
+                    currentWord = currentWord,
+                    guessedLetters = guessedLetters,
+                    remainingTurns = remainingTurns,
+                    showHint = showHint,
+                    disabledLetters = disabledLetters,
+                    vowelsShown = vowelsShown,
+                    onLetterSelected = { letter ->
+                        guessedLetters = guessedLetters + letter
+                        if (!currentWord.contains(letter)) {
+                            remainingTurns -= 1
+                        }
+                        checkGameOver(
+                            currentWord = currentWord,
+                            guessedLetters = guessedLetters,
+                            remainingTurns = remainingTurns,
+                            snackbarHostState = snackbarHostState,
+                            scope = scope,
+                            onNewGame = {
+                                guessedLetters = listOf()
+                                remainingTurns = 6
+                                remainingHits = 3
+                                showHint = false
+                                vowelsShown = true
+                                disabledLetters = listOf()
+                            }
+                        )
+                    },
+                    onHintClick = {
+                        HandleHintClick(
+                            currentWord = currentWord,
+                            guessedLetters = guessedLetters,
+                            remainingTurns = remainingTurns,
+                            remainingHits = remainingHits,
+                            vowelsShown = vowelsShown,
+                            snackbarHostState = snackbarHostState,
+                            scope = scope,
+                            onRemainingHitsUpdate = { remainingHits = it },
+                            onRemainingTurnsUpdate = { remainingTurns = it },
+                            onDisabledLettersUpdate = { disabledLetters = disabledLetters + it },
+                            onShowHintUpdate = { showHint = it },
+                            onGuessedLettersUpdate = { guessedLetters = it },
+                            onHintMessageUpdate = { hintMessage = it }  // Update hint message
+                        )
+                    },
+                    onNewGame = {
+                        guessedLetters = listOf()
+                        remainingTurns = 6
+                        remainingHits = 3
+                        showHint = false
+                        vowelsShown = true
+                        disabledLetters = listOf()
+                    },
+                    columns = columns
                 )
             }
         }
     }
 }
-
 
 @Composable
 fun PortraitLayout(
@@ -136,30 +185,40 @@ fun PortraitLayout(
     guessedLetters: List<Char>,
     remainingTurns: Int,
     showHint: Boolean,
+    disabledLetters: List<Char>,
+    vowelsShown: Boolean,
     onLetterSelected: (Char) -> Unit,
     onHintClick: () -> Unit,
-    onNewGame: () -> Unit
+    onNewGame: () -> Unit,
+    columns: Int  // Dynamically set number of columns based on orientation
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(6.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(16.dp))
         HangmanCanvas(remainingTurns = remainingTurns)
         Spacer(modifier = Modifier.height(16.dp))
 
         WordDisplay(word = currentWord, guessedLetters = guessedLetters)
+        Spacer(modifier = Modifier.height(48.dp))
+
+        Text(text = "CHOOSE A LETTER", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LetterSelectionPanel(
+            guessedLetters = guessedLetters,
+            disabledLetters = disabledLetters,
+            vowelsShown = vowelsShown,
+            onLetterSelected = onLetterSelected,
+            columns = columns
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
-        LetterSelectionPanel(guessedLetters = guessedLetters, onLetterSelected = onLetterSelected)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row( modifier = Modifier
-            .fillMaxHeight()){
-            Button(onClick = { onHintClick() }) {
-                Text("Hint")
-            }
-
+        Row(
+            modifier = Modifier.fillMaxHeight()
+        ) {
             Spacer(modifier = Modifier.width(8.dp))
 
             Button(onClick = { onNewGame() }) {
@@ -175,44 +234,36 @@ fun LandscapeLayout(
     guessedLetters: List<Char>,
     remainingTurns: Int,
     showHint: Boolean,
+    disabledLetters: List<Char>,
+    vowelsShown: Boolean,
+    hintMessage: String,  // Receive hint message
     onLetterSelected: (Char) -> Unit,
     onHintClick: () -> Unit,
-    onNewGame: () -> Unit
+    onNewGame: () -> Unit,
+    columns: Int  // Dynamically set number of columns based on orientation
 ) {
     Row(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier.fillMaxSize(),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
+        // LetterSelectionPanel takes more space with weight(2f)
         Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .weight(1f),
-            verticalArrangement = Arrangement.Top
+            modifier = Modifier.fillMaxHeight().weight(2f).padding(4.dp),
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(text = "CHOOSE A LETTER", style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(8.dp))
-            LetterSelectionPanel(guessedLetters = guessedLetters, onLetterSelected = onLetterSelected)
+            Text(text = "CHOOSE A LETTER", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(6.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .weight(1f),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            HangmanCanvas(remainingTurns = remainingTurns)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            WordDisplay(word = currentWord, guessedLetters = guessedLetters)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row( modifier = Modifier
-                .fillMaxHeight()){
+            LetterSelectionPanel(
+                guessedLetters = guessedLetters,
+                disabledLetters = disabledLetters,
+                vowelsShown = vowelsShown,
+                onLetterSelected = onLetterSelected,
+                columns = columns
+            )
+            Row(
+                modifier = Modifier.fillMaxHeight().padding(4.dp)
+            ) {
                 Button(onClick = { onHintClick() }) {
                     Text("Hint")
                 }
@@ -222,24 +273,56 @@ fun LandscapeLayout(
                 Button(onClick = { onNewGame() }) {
                     Text("New Game")
                 }
+                Row { // Show hint message below the Hint button
+                    if (hintMessage.isNotEmpty()) {
+                        Text(text = hintMessage, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(2.dp))
+                    } }
             }
+
+
+
+        }
+
+        Spacer(modifier = Modifier.width(4.dp))
+
+        // HangmanCanvas takes less space with weight(1f)
+        Column(
+            modifier = Modifier.fillMaxHeight().weight(1f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            HangmanCanvas(remainingTurns = remainingTurns)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            WordDisplay(word = currentWord, guessedLetters = guessedLetters)
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-fun LetterSelectionPanel(guessedLetters: List<Char>, onLetterSelected: (Char) -> Unit) {
+fun LetterSelectionPanel(
+    guessedLetters: List<Char>,
+    disabledLetters: List<Char>,
+    vowelsShown: Boolean,
+    onLetterSelected: (Char) -> Unit,
+    columns: Int  // Dynamically set number of columns based on orientation
+) {
     val alphabet = ('A'..'Z').toList()
+    val vowels = listOf('A', 'E', 'I', 'O', 'U')
 
     LazyVerticalGrid(
-        columns = GridCells.Fixed(5),
-        modifier = Modifier.fillMaxWidth())
-    {
+        columns = GridCells.Fixed(columns),  // Use dynamic columns value
+        modifier = Modifier.fillMaxWidth()
+    ) {
         items(alphabet) { letter ->
+            val isDisabled = guessedLetters.contains(letter) || disabledLetters.contains(letter)
+            val shouldShowLetter = if (vowelsShown) true else !vowels.contains(letter)
+
             Button(
                 onClick = { onLetterSelected(letter) },
-                modifier = Modifier.padding(4.dp),
-                enabled = !guessedLetters.contains(letter)
+                modifier = Modifier.padding(2.dp),
+                enabled = !isDisabled && shouldShowLetter
             ) {
                 Text(letter.toString())
             }
@@ -278,7 +361,6 @@ fun HangmanCanvas(remainingTurns: Int) {
         )
 
         if (remainingTurns <= 5) {
-            // head
             drawCircle(
                 color = Color.Black,
                 center = Offset(150f, 130f),
@@ -287,7 +369,6 @@ fun HangmanCanvas(remainingTurns: Int) {
             )
         }
         if (remainingTurns <= 4) {
-            // body
             drawLine(
                 color = Color.Black,
                 start = Offset(150f, 160f),
@@ -296,7 +377,6 @@ fun HangmanCanvas(remainingTurns: Int) {
             )
         }
         if (remainingTurns <= 3) {
-            // left arm
             drawLine(
                 color = Color.Black,
                 start = Offset(150f, 180f),
@@ -305,7 +385,6 @@ fun HangmanCanvas(remainingTurns: Int) {
             )
         }
         if (remainingTurns <= 2) {
-            // right arm
             drawLine(
                 color = Color.Black,
                 start = Offset(150f, 180f),
@@ -314,7 +393,6 @@ fun HangmanCanvas(remainingTurns: Int) {
             )
         }
         if (remainingTurns <= 1) {
-            // left leg
             drawLine(
                 color = Color.Black,
                 start = Offset(150f, 240f),
@@ -323,7 +401,6 @@ fun HangmanCanvas(remainingTurns: Int) {
             )
         }
         if (remainingTurns <= 0) {
-            // right leg
             drawLine(
                 color = Color.Black,
                 start = Offset(150f, 240f),
@@ -341,46 +418,67 @@ fun HandleHintClick(
     remainingTurns: Int,
     remainingHits: Int,
     vowelsShown: Boolean,
-    snackbarHostState: SnackbarHostState, // 使用 SnackbarHostState
+    snackbarHostState: SnackbarHostState,
     scope: CoroutineScope,
     onRemainingHitsUpdate: (Int) -> Unit,
     onRemainingTurnsUpdate: (Int) -> Unit,
+    onDisabledLettersUpdate: (List<Char>) -> Unit,
     onShowHintUpdate: (Boolean) -> Unit,
-    onVowelsShownUpdate: (Boolean) -> Unit
+    onGuessedLettersUpdate: (List<Char>) -> Unit,
+    onHintMessageUpdate: (String) -> Unit  // New callback for updating hint message
 ) {
-
     if (remainingHits <= 0 || remainingTurns <= 1) {
-        // 使用 Snackbar 替代 Toast
         scope.launch {
             snackbarHostState.showSnackbar("Hint not available")
         }
     } else {
-        // 根据点击次数执行不同的提示
         when (remainingHits) {
             3 -> {
-                onShowHintUpdate(true) // 第一次点击显示提示信息
+                onHintMessageUpdate("Hint 1: food")  // Update hint message instead of using Snackbar
+                onShowHintUpdate(true)
             }
             2 -> {
-                // 第二次点击禁用一半剩余的错误字母，并减少一次机会
-                val wrongLetters = ('A'..'Z').filterNot { it in currentWord || it in guessedLetters }
-                //TODO: Disable half of the remaining wrong letters
-                // 随机禁用一半错误字母逻辑实现
+                val remainingWrongLetters = ('A'..'Z').filterNot { it in currentWord || it in guessedLetters }
+                val lettersToDisable = remainingWrongLetters.shuffled().take(remainingWrongLetters.size / 2)
+
+                onDisabledLettersUpdate(lettersToDisable)
                 onRemainingTurnsUpdate(remainingTurns - 1)
+                onHintMessageUpdate("Hint 2: Half of the wrong letters are disabled")
             }
             1 -> {
-                // 第三次点击显示所有元音字母，并减少一次机会
-                onVowelsShownUpdate(true)
-                //TODO: Show all vowels logic implementation，然后直接吊死
+                val vowels = listOf('A', 'E', 'I', 'O', 'U')
+                val vowelsInWord = currentWord.filter { vowels.contains(it) }.toList()
+
+                onGuessedLettersUpdate(guessedLetters + vowelsInWord)
+                onDisabledLettersUpdate(vowels)
                 onRemainingTurnsUpdate(remainingTurns - 1)
+                onHintMessageUpdate("Hint 3: All vowels in the word are revealed")
             }
         }
         onRemainingHitsUpdate(remainingHits - 1)
     }
 }
 
-// TODO: Implement the remaining functions  1. 结束游戏 2. 看看还有什么遗漏的
-
-
+fun checkGameOver(
+    currentWord: String,
+    guessedLetters: List<Char>,
+    remainingTurns: Int,
+    snackbarHostState: SnackbarHostState,
+    scope: CoroutineScope,
+    onNewGame: () -> Unit
+) {
+    if (remainingTurns <= 0) {
+        scope.launch {
+            snackbarHostState.showSnackbar("You lost! The word was $currentWord")
+        }
+        onNewGame()
+    } else if (currentWord.all { guessedLetters.contains(it) }) {
+        scope.launch {
+            snackbarHostState.showSnackbar("Congratulations! You guessed the word!")
+        }
+        onNewGame()
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
