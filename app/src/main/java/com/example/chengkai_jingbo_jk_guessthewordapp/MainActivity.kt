@@ -55,7 +55,6 @@ fun GuessTheWordGame() {
     var remainingTurns by rememberSaveable { mutableIntStateOf(6) }
     var remainingHits by rememberSaveable { mutableIntStateOf(3) }
     var showHint by rememberSaveable { mutableStateOf(false) }
-    var vowelsShown by rememberSaveable { mutableStateOf(true) }
     var disabledLetters by rememberSaveable { mutableStateOf(listOf<Char>()) }
     var hintMessage by rememberSaveable { mutableStateOf("") }  // Store the hint message
 
@@ -95,7 +94,6 @@ fun GuessTheWordGame() {
                                 remainingTurns = 6
                                 remainingHits = 3
                                 showHint = false
-                                vowelsShown = true
                                 disabledLetters = listOf()
                                 hintMessage = ""  // Reset hint message
                             }
@@ -126,7 +124,6 @@ fun GuessTheWordGame() {
                         remainingTurns = 6
                         remainingHits = 3
                         showHint = false
-                        vowelsShown = true
                         disabledLetters = listOf()
                         hintMessage = ""  // Reset hint message
                     },
@@ -158,7 +155,6 @@ fun GuessTheWordGame() {
                                 remainingTurns = 6
                                 remainingHits = 3
                                 showHint = false
-                                vowelsShown = true
                                 disabledLetters = listOf()
                                 hintMessage = "" // Reset hint message
                             }
@@ -172,7 +168,6 @@ fun GuessTheWordGame() {
                         remainingTurns = 6
                         remainingHits = 3
                         showHint = false
-                        vowelsShown = true
                         disabledLetters = listOf()
                         hintMessage = "" // Reset hint message
                     },
@@ -315,7 +310,7 @@ fun LetterSelectionPanel(
     columns: Int  // Dynamically set number of columns based on orientation
 ) {
     val alphabet = ('A'..'Z').toList()
-   // val vowels = listOf('A', 'E', 'I', 'O', 'U')
+    val vowels = listOf('A', 'E', 'I', 'O', 'U')
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),  // Use dynamic columns value
