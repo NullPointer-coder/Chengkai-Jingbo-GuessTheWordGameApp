@@ -440,7 +440,9 @@ fun handleHintClick(
 
                 onDisabledLettersUpdate(lettersToDisable)
                 onRemainingTurnsUpdate(remainingTurns - 1)
-                onHintMessageUpdate("Hint 2: Half of the wrong letters are disabled")
+                scope.launch {
+                    snackbarHostState.showSnackbar("Hint 2: Half of the wrong letters are disabled.")
+                }
             }
             1 -> {
                 val vowels = listOf('A', 'E', 'I', 'O', 'U')
@@ -449,7 +451,9 @@ fun handleHintClick(
                 onGuessedLettersUpdate(guessedLetters + vowelsInWord)
                 onDisabledLettersUpdate(vowels)
                 onRemainingTurnsUpdate(remainingTurns - 1)
-                onHintMessageUpdate("Hint 3: All vowels in the word are revealed")
+                scope.launch {
+                    snackbarHostState.showSnackbar("Hint 3: All vowels in the word are revealed.")
+                }
             }
         }
         onRemainingHitsUpdate(remainingHits - 1)
