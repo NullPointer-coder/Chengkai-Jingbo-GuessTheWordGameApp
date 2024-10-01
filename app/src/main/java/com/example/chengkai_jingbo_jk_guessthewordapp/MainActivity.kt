@@ -72,8 +72,6 @@ fun GuessTheWordGame() {
                         if (!currentWord.contains(letter)) {
                             remainingTurns -= 1
                         }
-                        println("Guessed Letters: $guessedLetters")
-                        println("Disabled Letters: $disabledLetters")
                         checkGameOver(
                             currentWord = currentWord,
                             guessedLetters = guessedLetters,
