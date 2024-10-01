@@ -24,6 +24,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.CoroutineScope
 import com.example.chengkai_jingbo_jk_guessthewordapp.ui.theme.ChengkaiJingboJKGuessTheWordAppTheme
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,8 +40,16 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun GuessTheWordGame() {
-    val currentWord by rememberSaveable { mutableStateOf("APPLE") }
-    val currentHint by rememberSaveable { mutableStateOf("FRUIT") }
+    val wordList = listOf(
+        "APPLE" to "FRUIT",
+        "CARROT" to "VEGETABLE",
+        "ELEPHANT" to "ANIMAL",
+        "JAVASCRIPT" to "PROGRAMMING LANGUAGE"
+    )
+
+    var randomIndex = rememberSaveable { Random.nextInt(wordList.size) }
+    var currentWord by rememberSaveable { mutableStateOf(wordList[randomIndex].first) }
+    var currentHint by rememberSaveable { mutableStateOf(wordList[randomIndex].second) }
 
     var guessedLetters by rememberSaveable { mutableStateOf(listOf<Char>()) }
     var remainingTurns by rememberSaveable { mutableIntStateOf(6) }
@@ -79,6 +88,9 @@ fun GuessTheWordGame() {
                             snackbarHostState = snackbarHostState,
                             scope = scope,
                             onNewGame = {
+                                randomIndex = Random.nextInt(wordList.size)
+                                currentWord = wordList[randomIndex].first
+                                currentHint = wordList[randomIndex].second
                                 guessedLetters = listOf()
                                 remainingTurns = 6
                                 remainingHits = 3
@@ -107,6 +119,9 @@ fun GuessTheWordGame() {
                         )
                     },
                     onNewGame = {
+                        randomIndex = Random.nextInt(wordList.size)
+                        currentWord = wordList[randomIndex].first
+                        currentHint = wordList[randomIndex].second
                         guessedLetters = listOf()
                         remainingTurns = 6
                         remainingHits = 3
@@ -136,6 +151,9 @@ fun GuessTheWordGame() {
                             snackbarHostState = snackbarHostState,
                             scope = scope,
                             onNewGame = {
+                                randomIndex = Random.nextInt(wordList.size)
+                                currentWord = wordList[randomIndex].first
+                                currentHint = wordList[randomIndex].second
                                 guessedLetters = listOf()
                                 remainingTurns = 6
                                 remainingHits = 3
@@ -147,6 +165,9 @@ fun GuessTheWordGame() {
                         )
                     },
                     onNewGame = {
+                        randomIndex = Random.nextInt(wordList.size)
+                        currentWord = wordList[randomIndex].first
+                        currentHint = wordList[randomIndex].second
                         guessedLetters = listOf()
                         remainingTurns = 6
                         remainingHits = 3
