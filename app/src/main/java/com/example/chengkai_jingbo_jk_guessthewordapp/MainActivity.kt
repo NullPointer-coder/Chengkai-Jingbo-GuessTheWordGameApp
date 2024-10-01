@@ -63,12 +63,9 @@ fun GuessTheWordGame() {
                 // Landscape mode layout
                 LandscapeLayout(
                     currentWord = currentWord,
-                    currentHint = currentHint,
                     guessedLetters = guessedLetters,
                     remainingTurns = remainingTurns,
-                    showHint = showHint,
                     disabledLetters = disabledLetters,
-                    vowelsShown = vowelsShown,
                     hintMessage = hintMessage,  // Pass hint message
                     onLetterSelected = { letter ->
                         guessedLetters = guessedLetters + letter
@@ -99,7 +96,6 @@ fun GuessTheWordGame() {
                             guessedLetters = guessedLetters,
                             remainingTurns = remainingTurns,
                             remainingHits = remainingHits,
-                            vowelsShown = vowelsShown,
                             snackbarHostState = snackbarHostState,
                             scope = scope,
                             onRemainingHitsUpdate = { remainingHits = it },
@@ -128,7 +124,6 @@ fun GuessTheWordGame() {
                     guessedLetters = guessedLetters,
                     remainingTurns = remainingTurns,
                     disabledLetters = disabledLetters,
-                    vowelsShown = vowelsShown,
                     onLetterSelected = { letter ->
                         guessedLetters = guessedLetters + letter
                         if (!currentWord.contains(letter)) {
@@ -173,7 +168,6 @@ fun PortraitLayout(
     guessedLetters: List<Char>,
     remainingTurns: Int,
     disabledLetters: List<Char>,
-    vowelsShown: Boolean,
     onLetterSelected: (Char) -> Unit,
     onNewGame: () -> Unit,
     columns: Int  // Dynamically set number of columns based on orientation
@@ -196,7 +190,6 @@ fun PortraitLayout(
         LetterSelectionPanel(
             guessedLetters = guessedLetters,
             disabledLetters = disabledLetters,
-            vowelsShown = vowelsShown,
             onLetterSelected = onLetterSelected,
             columns = columns
         )
@@ -217,12 +210,9 @@ fun PortraitLayout(
 @Composable
 fun LandscapeLayout(
     currentWord: String,
-    currentHint: String,
     guessedLetters: List<Char>,
     remainingTurns: Int,
-    showHint: Boolean,
     disabledLetters: List<Char>,
-    vowelsShown: Boolean,
     hintMessage: String,  // Receive hint message
     onLetterSelected: (Char) -> Unit,
     onHintClick: () -> Unit,
@@ -252,7 +242,6 @@ fun LandscapeLayout(
             LetterSelectionPanel(
                 guessedLetters = guessedLetters,
                 disabledLetters = disabledLetters,
-                vowelsShown = vowelsShown,
                 onLetterSelected = onLetterSelected,
                 columns = columns
             )
@@ -301,12 +290,11 @@ fun LandscapeLayout(
 fun LetterSelectionPanel(
     guessedLetters: List<Char>,
     disabledLetters: List<Char>,
-    vowelsShown: Boolean,
     onLetterSelected: (Char) -> Unit,
     columns: Int  // Dynamically set number of columns based on orientation
 ) {
     val alphabet = ('A'..'Z').toList()
-    val vowels = listOf('A', 'E', 'I', 'O', 'U')
+   // val vowels = listOf('A', 'E', 'I', 'O', 'U')
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),  // Use dynamic columns value
@@ -314,12 +302,11 @@ fun LetterSelectionPanel(
     ) {
         items(alphabet) { letter ->
             val isDisabled = guessedLetters.contains(letter) || disabledLetters.contains(letter)
-            val shouldShowLetter = if (vowelsShown) true else !vowels.contains(letter)
 
             Button(
                 onClick = { onLetterSelected(letter) },
                 modifier = Modifier.padding(2.dp),
-                enabled = !isDisabled && shouldShowLetter
+                enabled = !isDisabled
             ) {
                 Text(letter.toString())
             }
@@ -415,7 +402,6 @@ fun handleHintClick(
     guessedLetters: List<Char>,
     remainingTurns: Int,
     remainingHits: Int,
-    vowelsShown: Boolean,
     snackbarHostState: SnackbarHostState,
     scope: CoroutineScope,
     onRemainingHitsUpdate: (Int) -> Unit,
