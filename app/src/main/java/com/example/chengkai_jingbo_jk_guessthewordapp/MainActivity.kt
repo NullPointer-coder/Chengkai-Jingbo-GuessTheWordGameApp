@@ -73,6 +73,7 @@ fun GuessTheWordGame() {
                     currentWord = currentWord,
                     guessedLetters = guessedLetters,
                     remainingTurns = remainingTurns,
+                    remainingHits = remainingHits,
                     disabledLetters = disabledLetters,
                     hintMessage = hintMessage,  // Pass hint message
                     onLetterSelected = { letter ->
@@ -228,6 +229,7 @@ fun LandscapeLayout(
     currentWord: String,
     guessedLetters: List<Char>,
     remainingTurns: Int,
+    remainingHits: Int,
     disabledLetters: List<Char>,
     hintMessage: String,  // Receive hint message
     onLetterSelected: (Char) -> Unit,
@@ -267,7 +269,7 @@ fun LandscapeLayout(
                     .padding(4.dp)
             ) {
                 Button(onClick = { onHintClick() }) {
-                    Text("Hint")
+                    Text("Hint ($remainingHits)")
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
