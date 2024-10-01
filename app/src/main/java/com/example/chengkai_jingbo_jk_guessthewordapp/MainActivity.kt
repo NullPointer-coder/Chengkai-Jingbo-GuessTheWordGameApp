@@ -269,7 +269,6 @@ fun LandscapeLayout(
                 onLetterSelected = onLetterSelected,
                 columns = columns
             )
-            Spacer(modifier = Modifier.height(4.dp))
 
             Row(
                 modifier = Modifier
