@@ -158,6 +158,7 @@ fun GuessTheWordGame() {
                         showHint = false
                         vowelsShown = true
                         disabledLetters = listOf()
+                        hintMessage = "" // Reset hint message
                     },
                     columns = columns
                 )
