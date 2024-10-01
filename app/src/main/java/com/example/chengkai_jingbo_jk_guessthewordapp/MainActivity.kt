@@ -47,7 +47,6 @@ fun GuessTheWordGame() {
     var remainingHits by rememberSaveable { mutableIntStateOf(3) }
     var showHint by rememberSaveable { mutableStateOf(false) }
     var vowelsShown by rememberSaveable { mutableStateOf(true) }
-    var disabledLetters by rememberSaveable { mutableStateOf(listOf<Char>()) }
     var hintMessage by rememberSaveable { mutableStateOf("") }  // Store the hint message
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -65,7 +64,6 @@ fun GuessTheWordGame() {
                     currentWord = currentWord,
                     guessedLetters = guessedLetters,
                     remainingTurns = remainingTurns,
-                    disabledLetters = disabledLetters,
                     hintMessage = hintMessage,  // Pass hint message
                     onLetterSelected = { letter ->
                         guessedLetters = guessedLetters + letter
@@ -84,7 +82,6 @@ fun GuessTheWordGame() {
                                 remainingHits = 3
                                 showHint = false
                                 vowelsShown = true
-                                disabledLetters = listOf()
                                 hintMessage = ""  // Reset hint message
                             }
                         )
@@ -98,12 +95,12 @@ fun GuessTheWordGame() {
                             remainingHits = remainingHits,
                             snackbarHostState = snackbarHostState,
                             scope = scope,
+                            onDisabledLettersUpdate = { guessedLetters = it },
                             onRemainingHitsUpdate = { remainingHits = it },
                             onRemainingTurnsUpdate = { remainingTurns = it },
-                            onDisabledLettersUpdate = { disabledLetters = disabledLetters + it },
                             onShowHintUpdate = { showHint = it },
                             onGuessedLettersUpdate = { guessedLetters = it },
-                            onHintMessageUpdate = { hintMessage = it }  // Update hint message
+                            onHintMessageUpdate = { hintMessage = it }// Update hint message
                         )
                     },
                     onNewGame = {
@@ -112,7 +109,6 @@ fun GuessTheWordGame() {
                         remainingHits = 3
                         showHint = false
                         vowelsShown = true
-                        disabledLetters = listOf()
                         hintMessage = ""  // Reset hint message
                     },
                     columns = columns
@@ -123,12 +119,12 @@ fun GuessTheWordGame() {
                     currentWord = currentWord,
                     guessedLetters = guessedLetters,
                     remainingTurns = remainingTurns,
-                    disabledLetters = disabledLetters,
                     onLetterSelected = { letter ->
                         guessedLetters = guessedLetters + letter
                         if (!currentWord.contains(letter)) {
                             remainingTurns -= 1
                         }
+                        println("Guessed Letters: $guessedLetters")
                         checkGameOver(
                             currentWord = currentWord,
                             guessedLetters = guessedLetters,
@@ -141,7 +137,6 @@ fun GuessTheWordGame() {
                                 remainingHits = 3
                                 showHint = false
                                 vowelsShown = true
-                                disabledLetters = listOf()
                                 hintMessage = "" // Reset hint message
                             }
                         )
@@ -152,7 +147,6 @@ fun GuessTheWordGame() {
                         remainingHits = 3
                         showHint = false
                         vowelsShown = true
-                        disabledLetters = listOf()
                         hintMessage = "" // Reset hint message
                     },
                     columns = columns
@@ -167,7 +161,6 @@ fun PortraitLayout(
     currentWord: String,
     guessedLetters: List<Char>,
     remainingTurns: Int,
-    disabledLetters: List<Char>,
     onLetterSelected: (Char) -> Unit,
     onNewGame: () -> Unit,
     columns: Int  // Dynamically set number of columns based on orientation
@@ -189,7 +182,6 @@ fun PortraitLayout(
 
         LetterSelectionPanel(
             guessedLetters = guessedLetters,
-            disabledLetters = disabledLetters,
             onLetterSelected = onLetterSelected,
             columns = columns
         )
@@ -212,7 +204,6 @@ fun LandscapeLayout(
     currentWord: String,
     guessedLetters: List<Char>,
     remainingTurns: Int,
-    disabledLetters: List<Char>,
     hintMessage: String,  // Receive hint message
     onLetterSelected: (Char) -> Unit,
     onHintClick: () -> Unit,
@@ -241,7 +232,6 @@ fun LandscapeLayout(
 
             LetterSelectionPanel(
                 guessedLetters = guessedLetters,
-                disabledLetters = disabledLetters,
                 onLetterSelected = onLetterSelected,
                 columns = columns
             )
@@ -289,7 +279,6 @@ fun LandscapeLayout(
 @Composable
 fun LetterSelectionPanel(
     guessedLetters: List<Char>,
-    disabledLetters: List<Char>,
     onLetterSelected: (Char) -> Unit,
     columns: Int  // Dynamically set number of columns based on orientation
 ) {
@@ -301,7 +290,7 @@ fun LetterSelectionPanel(
         modifier = Modifier.fillMaxWidth()
     ) {
         items(alphabet) { letter ->
-            val isDisabled = guessedLetters.contains(letter) || disabledLetters.contains(letter)
+            val isDisabled = guessedLetters.contains(letter)
 
             Button(
                 onClick = { onLetterSelected(letter) },
